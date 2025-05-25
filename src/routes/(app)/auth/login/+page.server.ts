@@ -9,6 +9,7 @@ import {
 	isPasswordValid,
 	setSessionTokenCookie
 } from '$lib/server/auth';
+import { selectUserByEmailQuery } from '$lib/server/db/queries';
 
 export const actions = {
 	login: async ({ request, cookies }) => {
@@ -23,7 +24,7 @@ export const actions = {
 		}
 
 		try {
-			const user = await db.select().from(userTable).where(eq(userTable.email, email)).get();
+			const [user] = await selectUserByEmailQuery.all({ email });
 
 			if (!user) {
 				return fail(404, { error: true, message: 'user not found' });

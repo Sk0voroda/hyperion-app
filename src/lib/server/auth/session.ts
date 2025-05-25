@@ -4,8 +4,8 @@ import { sha256 } from '@oslojs/crypto/sha2';
 
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
-import { sessionTable, userTable, type Session, type User } from '../db/schema';
-import { deleteSessionQuery, getSessionQuery } from '../db/queries';
+import { sessionTable, type Session, type User } from '../db/schema';
+import { deleteSessionQuery, deleteUserSessionsQuery, getSessionQuery } from '../db/queries';
 
 export const generateSessionToken = () => {
 	const bytes = new Uint8Array(24);
@@ -16,7 +16,7 @@ export const generateSessionToken = () => {
 
 export const createSession = async (token: string, userId: string) => {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	const session: Session = {
+	const session = {
 		id: sessionId,
 		userId,
 		// expire time 30 days
@@ -64,7 +64,7 @@ export const invalidateSession = async (sessionId: string) => {
 };
 
 export const invalidateAllSessions = async (userId: string) => {
-	await db.delete(sessionTable).where(eq(sessionTable.userId, userId));
+	await deleteUserSessionsQuery.all({ userId });
 };
 
 export type SessionValidationResult =
