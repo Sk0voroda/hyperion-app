@@ -11,6 +11,7 @@ export const POST: RequestHandler = async ({ cookies, locals }) => {
 		deleteSessionTokenCookie(cookies);
 		return new Response(null, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return new Response(null, { status: 404 });
 	}
 };

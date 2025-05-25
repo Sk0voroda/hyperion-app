@@ -5,6 +5,7 @@ import { sha256 } from '@oslojs/crypto/sha2';
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { sessionTable, userTable, type Session, type User } from '../db/schema';
+import { deleteSessionQuery, getSessionQuery } from '../db/queries';
 
 export const generateSessionToken = () => {
 	const bytes = new Uint8Array(24);
@@ -30,21 +31,17 @@ export const createSession = async (token: string, userId: string) => {
 export const validateSessionToken = async (token: string) => {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 
-	const result = await db
-		.select({ user: userTable, session: sessionTable })
-		.from(sessionTable)
-		.innerJoin(userTable, eq(sessionTable.userId, userTable.id))
-		.where(eq(sessionTable.id, sessionId))
-		.get();
+	const result = await getSessionQuery.all({ sessionId });
 
-	if (!result) {
+	if (!result[0]) {
 		return { session: null, user: null };
 	}
 
-	const { user, session } = result;
+	const { user, session } = result[0];
 
 	if (Date.now() >= session.expiresAt.getTime()) {
-		await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
+		await deleteSessionQuery.get({ sessionId: session.id });
+
 		return { session: null, user: null };
 	}
 
@@ -63,7 +60,7 @@ export const validateSessionToken = async (token: string) => {
 };
 
 export const invalidateSession = async (sessionId: string) => {
-	await db.delete(sessionTable).where(eq(sessionTable.id, sessionId));
+	await deleteSessionQuery.all({ sessionId });
 };
 
 export const invalidateAllSessions = async (userId: string) => {
