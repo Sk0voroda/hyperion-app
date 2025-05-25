@@ -3,7 +3,7 @@ import type { Cookies as CookiesType } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
 import { db } from '../db';
-import { accounts } from '../db/schema';
+import { accountTable } from '../db/schema';
 
 import { getClient } from '../telegram';
 
@@ -13,11 +13,6 @@ export class Cookies extends Context.Tag('Cookies')<
 	CookiesType,
 	{ readonly set: CookiesType['set'] }
 >() {}
-
-// export class GramClient extends Context.Tag('GramClient')<
-// 	TelegramClient,
-// 	{ readonly connect: TelegramClient['connect']; readonly sendCode: TelegramClient['sendCode'] }
-// >() {}
 
 export const sendCode = (
 	id: string
@@ -35,7 +30,7 @@ export const sendCode = (
 		const cookies = yield* Cookies;
 
 		const account = yield* Effect.tryPromise({
-			try: () => db.select().from(accounts).where(eq(accounts.id, id)).limit(1).get(),
+			try: () => db.select().from(accountTable).where(eq(accountTable.id, id)).limit(1).get(),
 			catch: () => ({ status: 'DB_CONNECTION_ERROR' })
 		});
 

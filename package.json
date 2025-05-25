@@ -14,7 +14,10 @@
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
-		"studio": "npx drizzle-kit studio"
+		"studio": "npx drizzle-kit studio",
+		"generate": "npx drizzle-kit generate",
+		"migrate": "npx drizzle-kit migrate",
+		"clear": "rm -rf drizzle && rm local.db"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -47,6 +50,8 @@
 	},
 	"dependencies": {
 		"@libsql/client": "^0.15.2",
+		"@oslojs/crypto": "^1.0.1",
+		"@oslojs/encoding": "^1.1.0",
 		"@paralleldrive/cuid2": "^2.2.2",
 		"big-integer": "^1.6.52",
 		"drizzle-orm": "^0.41.0",
