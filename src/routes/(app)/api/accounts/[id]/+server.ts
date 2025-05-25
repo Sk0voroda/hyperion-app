@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { accounts } from '$lib/server/db/schema';
+import { accountTable } from '$lib/server/db/schema';
 import type { RequestHandler } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
@@ -12,11 +12,12 @@ export const DELETE: RequestHandler = async ({ params }) => {
 	}
 
 	try {
-		const account = await db.delete(accounts).where(eq(accounts.id, id)).returning();
+		const account = await db.delete(accountTable).where(eq(accountTable.id, id)).returning();
 		const accountBody = JSON.stringify({ account: account[0] });
 
 		return new Response(JSON.stringify({ account: accountBody }), { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return new Response(null, { status: 404 });
 	}
 };

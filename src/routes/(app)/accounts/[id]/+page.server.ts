@@ -1,11 +1,10 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import bigInt from 'big-integer';
 import { Effect } from 'effect';
 import { eq } from 'drizzle-orm';
 
 import { db } from '$lib/server/db';
-import { accounts } from '$lib/server/db/schema';
+import { accountTable } from '$lib/server/db/schema';
 
 import { Cookies, sendCode } from '$lib/server/actions';
 import { clientsMap, getClient } from '$lib/server/telegram';
@@ -22,7 +21,12 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	try {
-		const account = await db.select().from(accounts).where(eq(accounts.id, id)).limit(1).get();
+		const account = await db
+			.select()
+			.from(accountTable)
+			.where(eq(accountTable.id, id))
+			.limit(1)
+			.get();
 
 		return { account };
 	} catch (error) {
@@ -41,8 +45,8 @@ export const actions = {
 
 		try {
 			const account = await db
-				.delete(accounts)
-				.where(eq(accounts.id, id))
+				.delete(accountTable)
+				.where(eq(accountTable.id, id))
 				.limit(1)
 				.returning()
 				.get();
@@ -96,7 +100,7 @@ export const actions = {
 			cookies.delete('phoneCodeHash', { path: '/' });
 
 			const token = client.session.authKey?.getKey();
-			await db.update(accounts).set({ sessionToken: token });
+			await db.update(accountTable).set({ sessionToken: token });
 
 			return { success: true, authorized: true };
 		} catch (error) {
@@ -104,33 +108,4 @@ export const actions = {
 			return fail(400, { error: true, status: err.errorMessage });
 		}
 	}
-	// // test get message form change action
-	// get_message: async ({ params }) => {
-	// 	// temporary
-	// 	const account = await db
-	// 		.select()
-	// 		.from(accounts)
-	// 		.where(eq(accounts.id, params.id))
-	// 		.limit(1)
-	// 		.get();
-
-	// 	if (!account) {
-	// 		return fail(400, { error: true, status: 'ERROR' });
-	// 	}
-
-	// 	const client = getClient(account.phoneNumber);
-
-	// 	await client.connect();
-
-	// 	try {
-	// 		for await (const message of client.iterMessages(bigInt('-1001536630827'))) {
-	// 			console.log(message);
-	// 			break;
-	// 		}
-	// 	} catch (error) {
-	// 		console.log({ error });
-	// 	}
-
-	// 	return { retrieved: true };
-	// }
 } satisfies Actions;

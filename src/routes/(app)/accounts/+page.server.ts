@@ -2,12 +2,12 @@ import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
 
 import { eq } from 'drizzle-orm';
-import { accounts } from '$lib/server/db/schema';
+import { accountTable } from '$lib/server/db/schema';
 import { db } from '$lib/server/db';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const accountsResult = await db.select().from(accounts);
+		const accountsResult = await db.select().from(accountTable);
 
 		return { accounts: accountsResult };
 	} catch (error) {
@@ -25,7 +25,7 @@ export const actions = {
 		}
 
 		try {
-			await db.delete(accounts).where(eq(accounts.id, id));
+			await db.delete(accountTable).where(eq(accountTable.id, id));
 			return { success: true };
 		} catch {
 			return fail(400, { error: true, message: 'Something went wrong!' });
